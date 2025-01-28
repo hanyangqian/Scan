@@ -1,22 +1,30 @@
 import cv2
 import numpy as np
-from PIL import Image
-import pytesseract
+import argparse
 
+
+
+# 设置参数
+ap = argparse.ArgumentParser()
+ap.add_argument("-i", "--image", required = True, help = "Path to the image to be scanned")
+args = vars(ap.parse_args())
 
 def img_show(name, img):
     cv2.imshow(name, img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
 def order_points(pts):
+    # 一共4个坐标点
     rect = np.zeros((4, 2), dtype='float32')
 
+    # 按顺序找到对应0123对应左上，右上，右下，左下
+    # 计算左上，右下
     s = pts.sum(axis=1)
     rect[0] = pts[np.argmin(s)]
     rect[2] = pts[np.argmax(s)]
 
+    # 计算左上，右下
     diff = np.diff(pts, axis=1)
     rect[1] = pts[np.argmin(diff)]
     rect[3] = pts[np.argmax(diff)]
@@ -66,6 +74,7 @@ def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
 
 
 img = cv2.imread('pos.jpg')
+# 坐标相同变化
 ratio = img.shape[0] / 500.0
 orig = img.copy()
 
@@ -89,6 +98,9 @@ for c in cnts:
     # 计算轮廓长度
     peri = cv2.arcLength(c, True)  # 计算长度
     # 计算一下轮廓近似 近似出来轮廓的矩形 True 表示封闭
+    # c 输入点集
+    # epsilon 表示从原始轮廓到近似轮廓的最大距离，是准确度参数
+    # cv.approxPolyDP 函数返回的是多边形的顶点坐标数组
     approx = cv2.approxPolyDP(c, 0.02*peri, True)
     # 四个点的时候就拿出来
     if len(approx) == 4:
@@ -100,7 +112,10 @@ print("======STEP 2 获取轮廓======")
 cv2.drawContours(img, [screenCnt], -1, (0, 0, 255), 3)
 img_show('CNT', img)
 
-# 做透视变换
+# print(screenCnt)
+# print(screenCnt.reshape(4, 2))
+
+# 注意reshape
 warped = four_point_transform(orig, screenCnt.reshape(4, 2) * ratio)
 
 # 二值化
@@ -109,23 +124,9 @@ ref = cv2.threshold(warped, 100, 255, cv2.THRESH_BINARY)[1]
 cv2.imwrite("res.jpg", ref)
 # 展示结果
 print("======STEP 3 透视变换======")
-cv2.imshow("pos", resize(orig, height=650))
-cv2.imshow("res", resize(ref, height=650))
 
-
-image = cv2.imread("res.jpg")
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-preprocess = 'thresh' #thresh  #做预处理选项
-if preprocess == 'blur':
-    gray = cv2.blur(gray,(3,3))
-if preprocess == 'thresh':
-    gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
-
-
-text = pytesseract.image_to_string(Image.open("res.jpg"))  # 转化成文本
-print("======STEP 4 OCR识别======")
-print(text)
-
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+#pos与res未响应问题
+#imshow需要配合waitkey等
+img_show("pos", resize(orig, height=650))
+img_show("res", resize(ref, height=650))
 

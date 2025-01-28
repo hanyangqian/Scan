@@ -23,3 +23,11 @@
 ![image](https://user-images.githubusercontent.com/74131166/148946683-bef65c80-ede6-456e-8d45-f2bb8536f8c8.png)
 等等，下面还有好多结果
 # 不足是， 没有训练相关中文
+
+# 遇到的问题
+#### Python sorted() 函数
+https://www.runoob.com/python/python-func-sorted.html
+#### 轻松搞懂python列表list 和numpy.array数组的区别
+https://blog.csdn.net/caoyuan666/article/details/105239876
+#### 【OpenCV】透视变换——cv2.getPerspectiveTransform()与cv2.warpPerspective()详解
+https://blog.csdn.net/AI_dataloads/article/details/133933702
